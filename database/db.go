@@ -251,7 +251,6 @@ const sqliteSchema = `
 		username TEXT DEFAULT '',
 		expires_at DATETIME
 	);
-	CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
 
 	CREATE TABLE IF NOT EXISTS share_sessions (
 		token TEXT PRIMARY KEY,
@@ -489,7 +488,6 @@ const postgresSchema = `
 		username TEXT DEFAULT '',
 		expires_at TIMESTAMP
 	);
-	CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
 
 	CREATE TABLE IF NOT EXISTS share_sessions (
 		token TEXT PRIMARY KEY,

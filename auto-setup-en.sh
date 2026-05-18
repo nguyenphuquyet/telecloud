@@ -427,7 +427,11 @@ create_env() {
         cat > "$BASE_DIR/.env" <<EOF
 PORT=$PORT
 LISTEN_ADDR=127.0.0.1
+
+# Master key to encrypt sessions and sensitive settings (Auto-generated if left blank)
 TELECLOUD_MASTER_KEY=$MASTER_KEY
+
+# One-time token to access the initial /setup page (Leave blank to disable setup gating)
 TELECLOUD_SETUP_TOKEN=$SETUP_TOKEN
 EOF
 
@@ -1157,7 +1161,7 @@ backup_data() {
     echo "[+] Stopping application to ensure data integrity..."
     stop_app
     echo "[+] Creating backup..."
-    (cd "$BASE_DIR" && tar -czf "$HOME/telecloud_backups/$BK_NAME" database.db* .env 2>/dev/null)
+    (cd "$BASE_DIR" && tar -czf "$HOME/telecloud_backups/$BK_NAME" database.db* .env master.key data/master.key 2>/dev/null)
     
     if [ $? -eq 0 ]; then
         echo "✅ Backup successful: $HOME/telecloud_backups/$BK_NAME"
@@ -1190,7 +1194,7 @@ restore_data() {
     if [ "$cf" == "y" ]; then
         stop_app
         echo "[+] Cleaning up old data..."
-        rm -f "$BASE_DIR/database.db" "$BASE_DIR/database.db-wal" "$BASE_DIR/database.db-shm" 2>/dev/null || true
+        rm -f "$BASE_DIR/database.db" "$BASE_DIR/database.db-wal" "$BASE_DIR/database.db-shm" "$BASE_DIR/master.key" "$BASE_DIR/data/master.key" 2>/dev/null || true
         (cd "$BASE_DIR" && tar -xzf "$HOME/telecloud_backups/$FILE_NAME")
         echo "✅ Restoration complete. Please restart the application."
     fi

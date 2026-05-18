@@ -124,6 +124,7 @@ func SetupRouter(cfg *config.Config, contentFS fs.FS, startTG func(cfg *config.C
 		api.GET("/settings/backup", h.handleGetBackupStatus)
 		api.POST("/settings/backup", h.handlePostBackup)
 		api.POST("/settings/backup/toggle", h.handlePostBackupToggle)
+		api.POST("/settings/restore", h.handlePostRestore)
 
 		// Users
 		api.GET("/users", h.handleGetUsers)

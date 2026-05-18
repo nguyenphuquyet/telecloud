@@ -427,7 +427,11 @@ create_env() {
         cat > "$BASE_DIR/.env" <<EOF
 PORT=$PORT
 LISTEN_ADDR=127.0.0.1
+
+# Khóa master mã hóa session và settings nhạy cảm (Tự động sinh nếu để trống)
 TELECLOUD_MASTER_KEY=$MASTER_KEY
+
+# Token một lần truy cập trang /setup ban đầu (Để trống nếu muốn tắt bảo vệ)
 TELECLOUD_SETUP_TOKEN=$SETUP_TOKEN
 EOF
 
@@ -1158,7 +1162,7 @@ backup_data() {
     echo "[+] Đang tạm dừng ứng dụng để đảm bảo an toàn dữ liệu..."
     stop_app
     echo "[+] Đang tạo bản sao lưu..."
-    (cd "$BASE_DIR" && tar -czf "$HOME/telecloud_backups/$BK_NAME" database.db* .env 2>/dev/null)
+    (cd "$BASE_DIR" && tar -czf "$HOME/telecloud_backups/$BK_NAME" database.db* .env master.key data/master.key 2>/dev/null)
     
     if [ $? -eq 0 ]; then
         echo "✅ Đã sao lưu thành công tại: $HOME/telecloud_backups/$BK_NAME"
@@ -1191,7 +1195,7 @@ restore_data() {
     if [ "$cf" == "y" ]; then
         stop_app
         echo "[+] Đang xóa dữ liệu cũ..."
-        rm -f "$BASE_DIR/database.db" "$BASE_DIR/database.db-wal" "$BASE_DIR/database.db-shm" 2>/dev/null || true
+        rm -f "$BASE_DIR/database.db" "$BASE_DIR/database.db-wal" "$BASE_DIR/database.db-shm" "$BASE_DIR/master.key" "$BASE_DIR/data/master.key" 2>/dev/null || true
         (cd "$BASE_DIR" && tar -xzf "$HOME/telecloud_backups/$FILE_NAME")
         echo "✅ Đã khôi phục xong. Vui lòng khởi động lại ứng dụng."
     fi

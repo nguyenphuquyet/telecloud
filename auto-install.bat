@@ -177,11 +177,27 @@ if not exist ".env" (
         powershell -Command "(Get-Content .env) -replace '^#?TORRENT_PATH=.*', 'TORRENT_PATH=aria2c' | Set-Content .env"
     )
 
+    :: Tu dong sinh khoa ngau nhien cho Windows
+    for /f "tokens=*" %%a in ('powershell -Command "[byte[]]$b = New-Object byte[] 32; [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($b); [System.BitConverter]::ToString($b).Replace(\'-\', \'\').ToLower()"') do set "MASTER_KEY=%%a"
+    for /f "tokens=*" %%a in ('powershell -Command "[byte[]]$b = New-Object byte[] 16; [Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes($b); [System.BitConverter]::ToString($b).Replace(\'-\', \'\').ToLower()"') do set "SETUP_TOKEN=%%a"
+
+    if not "!MASTER_KEY!"=="" (
+        powershell -Command "(Get-Content .env) -replace '^TELECLOUD_MASTER_KEY=.*', 'TELECLOUD_MASTER_KEY=!MASTER_KEY!' | Set-Content .env"
+    )
+    if not "!SETUP_TOKEN!"=="" (
+        powershell -Command "(Get-Content .env) -replace '^#?TELECLOUD_SETUP_TOKEN=.*', 'TELECLOUD_SETUP_TOKEN=!SETUP_TOKEN!' | Set-Content .env"
+    )
+
     echo [v] Cai dat hoan tat!
     echo.
-    echo [!] Ung dung se chay o che do Thiet lap (Setup Mode).
-    echo [!] Vui long khoi dong TeleCloud (Muc 3) roi truy cap:
-    echo     http://IP_HOAC_TEN_MIEN:8091/setup
+    echo ==================================================================
+    echo CANH BAO: HAY SAO LUU MASTER KEY DUOI DAY VAO TRINH QUAN LY MAT KHAU!
+    echo     Mat key nay = mat quyen giai ma Telegram session va secrets.
+    echo     TELECLOUD_MASTER_KEY=!MASTER_KEY!
+    echo ------------------------------------------------------------------
+    echo [!] Vui long khoi dong TeleCloud (Muc 3) roi truy cap link de thiet lap:
+    echo     http://127.0.0.1:8091/setup?token=!SETUP_TOKEN!
+    echo ==================================================================
     pause
     goto MENU
 

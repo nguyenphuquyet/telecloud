@@ -227,6 +227,40 @@ func zipBackupBundle(dbPath, thumbsDir, targetZip string) error {
 		}
 	}
 
+	// 1b. Add master.key if it exists (for auto-generated keys)
+	keyFile := ""
+	if _, err := os.Stat("/app/data/master.key"); err == nil {
+		keyFile = "/app/data/master.key"
+	} else if _, err := os.Stat("data/master.key"); err == nil {
+		keyFile = "data/master.key"
+	} else if _, err := os.Stat("master.key"); err == nil {
+		keyFile = "master.key"
+	} else {
+		dbPathEnv := strings.TrimSpace(os.Getenv("DATABASE_PATH"))
+		if dbPathEnv != "" {
+			testFile := filepath.Join(filepath.Dir(dbPathEnv), "master.key")
+			if _, err := os.Stat(testFile); err == nil {
+				keyFile = testFile
+			}
+		}
+	}
+
+	if keyFile != "" {
+		f, err := os.Open(keyFile)
+		if err == nil {
+			// Save in ZIP under "data/master.key" or "master.key" depending on where it was found
+			zipPath := "master.key"
+			if strings.Contains(keyFile, "data/") || strings.Contains(keyFile, "/app/data") {
+				zipPath = "data/master.key"
+			}
+			w, err := archive.Create(zipPath)
+			if err == nil {
+				io.Copy(w, f)
+			}
+			f.Close()
+		}
+	}
+
 	// 2. Add Thumbnails
 	if thumbsDir != "" {
 		_ = filepath.Walk(thumbsDir, func(path string, info os.FileInfo, err error) error {

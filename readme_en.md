@@ -73,40 +73,17 @@ For configuration details and alternative installation methods, please refer to 
 *   [⚙️ **Configuration Guide**](./docs/Configuration.md) (.env, Nginx Proxy...)
 *   [🐳 **Docker Deployment**](./docs/Docker.md) (Docker Run, Compose)
 *   [🔌 **API Documentation**](./docs/API.md) (Upload API Guide)
+*   [🔐 **Security Policy**](./docs/Security.md) (Encryption, Hardening & Warnings)
 *   [🛠️ **Development & Localization**](./docs/Development.md) (Build from source, Contribute)
 
 ---
 
 ## 🔐 Security
 
-TeleCloud encrypts sensitive data at rest and ships with sane hardening defaults, but the operator still has to wire a few things up.
+TeleCloud is designed with optimized security standards (including AES-256-GCM encryption for sensitive data, systemd hardening, WebDAV rate limiting, SSRF/DNS Rebinding mitigation, CSP, etc.).
 
-**Environment Settings (Optional):**
-
-*   **`TELECLOUD_MASTER_KEY`** — 32 random bytes. If left blank, a secure 32-byte key is **automatically generated** and saved to a persistent `master.key` file in your database directory. Used to AES-256-GCM the Telegram session blob and sensitive settings (`api_id`, `api_hash`, `log_group_id`, `bot_tokens`). **Back up the `master.key` file or this variable separately from the database.** Losing it means you cannot decrypt your data. If you want, you can generate it with: `openssl rand -hex 32`.
-
-**Recommended:**
-
-*   **`TELECLOUD_SETUP_TOKEN`** — one-time token that gates `/setup` so a scanner can't race you to the admin form. Generate with `openssl rand -hex 16`. When set, requests to `/setup` must carry `X-Setup-Token` or `?token=<value>`.
-*   **`LISTEN_ADDR`** — defaults to `127.0.0.1` until admin is created (so the open wizard isn't reachable from the Internet) and `0.0.0.0` afterwards. Front the service with Cloudflare Tunnel / Nginx / Tailscale instead of exposing the port directly.
-*   **Docker Compose** maps to `127.0.0.1:8091` by default. Only change it to `0.0.0.0` if you deliberately want it public.
-
-**Already on by default:**
-
-*   Telegram sessions + sensitive settings are AES-256-GCM encrypted at rest with an auto-migration on boot (SQLite makes a `.pre-enc-<ts>.bak`; MySQL/Postgres require `TELECLOUD_I_HAVE_BACKED_UP=1` so you don't migrate without a dump).
-*   `auto-setup.sh` writes a systemd unit running under a dedicated user (`User=telecloud` or `DynamicUser`), with `NoNewPrivileges`, `ProtectSystem=strict`, `ProtectHome`, `PrivateTmp`, and SHA-256-verifies the binary against `checksums.txt` from the same release.
-*   Direct-download token HMAC key is HKDF-derived from the master key, not the admin password — rotating the password does NOT invalidate previously issued links.
-*   Password-protected shares mint a random session token; the bcrypt hash never leaves the server.
-*   WebDAV applies a 5 attempts / 15 minutes per-IP rate limit; the auth cache uses SHA-256 of the password (not plaintext) with a 2-minute TTL, and is invalidated automatically on password change.
-*   Web sessions carry `expires_at` (30 days). Changing the password invalidates every other session of that user. A background task purges expired rows every 6 hours.
-*   Audit log (`audit_log`) records login/logout, password changes, admin reset, setup completion, and setting toggles. Retained 90 days.
-*   Remote URL fetchers (upload-from-URL, yt-dlp, …) go through `SafeHTTPClient`, which re-resolves and pins the IP at dial time so DNS rebinding can't redirect the request to a private address.
-*   CSP **excludes** Cloudflare Web Analytics by default. Flip `analytics_enabled=true` to opt in. The policy still allows `'unsafe-inline'` and `'unsafe-eval'` because the frontend uses Alpine.js.
-
-**Known limitations:**
-
-*   Telegram cloud chat is **not** end-to-end encrypted. Don't keep ID documents, intimate photos, secret keys or other sensitive material in TeleCloud — encrypt client-side (`rclone crypt`, Cryptomator) first if you really want to use it as storage.
-*   Telegram may ban accounts used as personal cloud storage; there is no recovery. Use a dedicated phone number + account.
+For more detailed information regarding security architecture, operational recommendations, and known limitations, please refer to:
+👉 [**Security Policy & Hardening Guide**](./docs/Security.md)
 
 ---
 

@@ -22,6 +22,10 @@ Sao chép tệp `env.example` thành `.env` trong thư mục chứa file thực 
 *   `DATABASE_DSN`: (Bắt buộc nếu dùng MySQL/Postgres) Chuỗi kết nối.
     *   VD MySQL: `user:pass@tcp(127.0.0.1:3306)/telecloud?parseTime=true&charset=utf8mb4`
     *   VD Postgres: `postgres://user:pass@127.0.0.1:5432/telecloud?sslmode=disable`
+*   `TELECLOUD_MASTER_KEY`: (Tùy chọn) Khóa 32-byte dùng để mã hóa session và settings nhạy cảm. Nếu để trống, hệ thống sẽ tự động sinh và lưu trữ tại tệp `master.key` trong thư mục dữ liệu. **Cực kỳ quan trọng, hãy sao lưu tách biệt với DB.**
+*   `TELECLOUD_SETUP_TOKEN`: (Tùy chọn) Mã token ngẫu nhiên để bảo vệ đường dẫn `/setup` ban đầu khỏi bot/scanner khi cài đặt mới.
+*   `LISTEN_ADDR`: (Tùy chọn) Địa chỉ IP lắng nghe của ứng dụng. Mặc định là `127.0.0.1` khi chưa thiết lập admin (để bảo mật trình thiết lập setup ban đầu), và tự động chuyển thành `0.0.0.0` sau khi hoàn tất thiết lập. Bạn có thể tự đặt địa chỉ IP cụ thể (ví dụ: `0.0.0.0` để mở cổng ra ngoài hoặc đặt sau Cloudflare Tunnel, Nginx, Tailscale).
+*   `TELECLOUD_I_HAVE_BACKED_UP`: (Bắt buộc đặt bằng `1` khi nâng cấp MySQL/Postgres) Xác nhận rằng bạn đã sao lưu cơ sở dữ liệu trước khi hệ thống chạy tiến trình mã hóa tự động.
 *   `THUMBS_DIR`: (Tùy chọn) Đường dẫn tới thư mục chứa ảnh thumbnail (mặc định: `./static/thumbs`).
 *   `TEMP_DIR`: (Tùy chọn) Đường dẫn thư mục tạm dùng để chứa các mảnh file (chunks) (mặc định: `./temp`).
 *   `PROXY_URL`: (Tùy chọn) Proxy để kết nối MTProto, hỗ trợ HTTP và SOCKS5 (VD: `socks5://127.0.0.1:1080`).
@@ -92,6 +96,10 @@ Copy `env.example` to `.env` in the binary directory and fill in your details:
 *   `DATABASE_DSN`: Required for MySQL/Postgres.
     *   Example MySQL: `user:pass@tcp(127.0.0.1:3306)/telecloud?parseTime=true&charset=utf8mb4`
     *   Example Postgres: `postgres://user:pass@127.0.0.1:5432/telecloud?sslmode=disable`
+*   `TELECLOUD_MASTER_KEY`: (Optional) 32-byte master key used to encrypt sessions and sensitive settings. If empty, automatically generated and saved to `master.key` in your data directory. **Extremely important, back it up separately from the database.**
+*   `TELECLOUD_SETUP_TOKEN`: (Optional) Random one-time token to protect the initial `/setup` page against bot scanners.
+*   `LISTEN_ADDR`: (Optional) The IP address the application binds to. Defaults to `127.0.0.1` before setup is complete (to secure the initial setup wizard), and `0.0.0.0` after setup is complete. You can explicitly set this (e.g., `0.0.0.0` to expose the application port directly, or place it behind Cloudflare Tunnel, Nginx, or Tailscale).
+*   `TELECLOUD_I_HAVE_BACKED_UP`: (Required to be set to `1` when upgrading MySQL/Postgres) Confirms you have backed up your database before the system runs the automatic encryption migration.
 *   `THUMBS_DIR`: Directory for thumbnails (default: `./static/thumbs`).
 *   `TEMP_DIR`: Path for temporary file chunks (default: `./temp`).
 *   `PROXY_URL`: MTProto proxy, supports HTTP and SOCKS5.

@@ -22,8 +22,8 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Fetch frontend submodule (web/ is a git submodule, COPY doesn't include it)
-RUN git submodule update --init --recursive
+# Fetch frontend submodule if building from a git clone
+RUN if [ -d .git ]; then git submodule update --init --recursive; else echo "Not a git repository, skipping submodule init"; fi
 
 # Build frontend (Tailwind + bundle assets via npm)
 RUN cd web && sed -i 's/\r$//' build-frontend.sh && bash build-frontend.sh 1

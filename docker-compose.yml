@@ -35,11 +35,10 @@ services:
     volumes:
       # Persist database, thumbnails, temp files, and Telegram session
       - ./data:/app/data
-    # NOTE: distroless/static image has no shell or wget/curl,
-    # so CMD-SHELL healthchecks cannot work inside the container.
-    # Use an external monitoring tool or a sidecar container instead.
+    # NOTE: The runtime Docker image uses Alpine which includes 'wget',
+    # so you can uncomment this healthcheck if you want to monitor the container status.
     # healthcheck:
-    #   test: ["CMD-SHELL", "wget -qO- http://localhost:8091/ > /dev/null 2>&1 || exit 1"]
+    #   test: ["CMD-SHELL", "wget -qO- http://localhost:8091/ || exit 1"]
     #   interval: 30s
     #   timeout: 10s
     #   retries: 3

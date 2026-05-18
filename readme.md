@@ -73,40 +73,17 @@ Tải [**`auto-install.bat`**](https://raw.githubusercontent.com/dabeecao/telecl
 *   [⚙️ **Hướng dẫn cấu hình**](./docs/Configuration.md) (.env, Nginx Proxy...)
 *   [🐳 **Triển khai với Docker**](./docs/Docker.md) (Docker Run, Compose)
 *   [🔌 **Tài liệu API**](./docs/API.md) (Hướng dẫn Upload API)
+*   [🔐 **Chính sách bảo mật**](./docs/Security.md) (Mã hóa, Hardening & Cảnh báo)
 *   [🛠️ **Phát triển & Bản dịch**](./docs/Development.md) (Build từ nguồn, Đóng góp)
 
 ---
 
 ## 🔐 Bảo mật
 
-TeleCloud mã hóa dữ liệu nhạy cảm trong DB và chạy với các tiêu chuẩn hardening cơ bản, nhưng vẫn cần thao tác tay từ người vận hành.
+TeleCloud được thiết kế với các tiêu chuẩn bảo mật tối ưu (bao gồm mã hóa dữ liệu nhạy cảm AES-256-GCM trong DB, hardening systemd, rate limits, chống SSRF/DNS Rebinding, CSP...).
 
-**Cấu hình Môi trường (Optional):**
-
-*   **`TELECLOUD_MASTER_KEY`** — 32 byte ngẫu nhiên. Nếu để trống, hệ thống sẽ **tự động sinh ra** và lưu trữ vào tệp `master.key` nằm trong thư mục chứa Database. Dùng để mã hóa Telegram session blob và các setting nhạy cảm (`api_id`, `api_hash`, `log_group_id`, `bot_tokens`) bằng AES-256-GCM. **Hãy sao lưu tệp `master.key` hoặc biến này tách biệt với DB**. Mất key = không thể giải mã dữ liệu cũ. Nếu muốn, bạn có thể tự sinh bằng lệnh: `openssl rand -hex 32`.
-
-**Khuyến nghị:**
-
-*   **`TELECLOUD_SETUP_TOKEN`** — token một lần để chặn scanner cướp `/setup` trước khi bạn kịp tạo admin. Sinh bằng `openssl rand -hex 16`. Khi đã set, request tới `/setup` phải kèm `X-Setup-Token` hoặc `?token=<value>`.
-*   **`LISTEN_ADDR`** — mặc định `127.0.0.1` khi chưa setup admin (chống lộ wizard ra mạng công cộng), `0.0.0.0` sau khi setup. Đặt sau Cloudflare Tunnel / Nginx / Tailscale thay vì mở port trực tiếp.
-*   **Docker Compose** mặc định binding `127.0.0.1:8091`. Đổi sang `0.0.0.0` chỉ nếu bạn cố tình muốn lộ ra ngoài.
-
-**Đã làm sẵn:**
-
-*   Telegram session + các setting nhạy cảm mã hóa AES-256-GCM khi lưu DB; migrate tự động trên boot (SQLite tự tạo `.pre-enc-<ts>.bak`; với MySQL/Postgres yêu cầu `TELECLOUD_I_HAVE_BACKED_UP=1` để chạy).
-*   `auto-setup.sh` tạo systemd unit với user riêng (`User=telecloud` hoặc `DynamicUser`), `NoNewPrivileges`, `ProtectSystem=strict`, `ProtectHome`, `PrivateTmp` và verify SHA-256 binary từ `checksums.txt` cùng release.
-*   Token chia sẻ trực tiếp dùng HMAC key derived từ master key (không phụ thuộc admin password — đổi password không invalidate link đã phát hành).
-*   Share password protection dùng signed session token, **không** lưu bcrypt hash trong cookie.
-*   WebDAV có rate limit 5/15 phút/IP cho lần auth sai; cache verify ngắn (2 phút) và key dùng SHA-256 của mật khẩu, không phải plaintext.
-*   Session HTTP có `expires_at` (mặc định 30 ngày). Đổi password sẽ invalidate mọi session khác của user. Cleanup tự động 6 tiếng.
-*   Audit log (`audit_log` table) ghi login/logout, đổi password, admin reset, setup, thay đổi setting. Lưu 90 ngày.
-*   Tải URL từ xa (remote upload, yt-dlp...) dùng `SafeHTTPClient` có pinned dial — chặn DNS rebinding tới private/loopback IP.
-*   CSP mặc định **không** cho phép Cloudflare Web Analytics. Bật setting `analytics_enabled=true` nếu muốn opt-in. CSP vẫn cần `'unsafe-inline'` + `'unsafe-eval'` vì frontend dùng Alpine.js.
-
-**Hạn chế đã biết:**
-
-*   Telegram cloud chat **không** end-to-end encrypted. Đừng lưu giấy tờ tùy thân, ảnh riêng tư, secret keys hoặc tài liệu nhạy cảm vào TeleCloud — encrypt phía client (`rclone crypt`, Cryptomator) trước khi upload nếu vẫn muốn dùng làm storage.
-*   Telegram có quyền ban tài khoản dùng userbot cho mục đích lưu trữ; không có recovery nếu bị ban. Dùng số điện thoại + tài khoản phụ.
+Để xem chi tiết về kiến trúc bảo mật, các khuyến nghị vận hành và hạn chế đã biết, vui lòng tham khảo:
+👉 [**Tài liệu Hướng dẫn Bảo mật & Hardening**](./docs/Security.md)
 
 ---
 
