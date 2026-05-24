@@ -61,7 +61,7 @@
 
 ## 🚀 Quick Start
 
-Using the automated script is the easiest way to get started:
+Use the automated script — the easiest way to get started:
 
 ### Linux / Termux / macOS / Raspberry Pi
 ```bash
@@ -70,6 +70,20 @@ curl -fsSL https://raw.githubusercontent.com/dabeecao/telecloud-go/main/auto-set
 
 ### Windows
 Download [**`auto-install-en.bat`**](https://raw.githubusercontent.com/dabeecao/telecloud-go/main/auto-install-en.bat) and run as **Administrator**.
+
+---
+
+## 🚀 Cài đặt nhanh (Tiếng Việt)
+
+Sử dụng script tự động là cách đơn giản nhất để bắt đầu:
+
+### Linux / Termux / macOS / Raspberry Pi
+```bash
+curl -fsSL https://raw.githubusercontent.com/dabeecao/telecloud-go/main/auto-setup.sh -o auto-setup.sh && bash auto-setup.sh
+```
+
+### Windows
+Tải [**`auto-install.bat`**](https://raw.githubusercontent.com/dabeecao/telecloud-go/main/auto-install.bat) và chạy với quyền **Administrator**.
 
 ---
 
