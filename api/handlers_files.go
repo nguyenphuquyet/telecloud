@@ -126,6 +126,15 @@ func (h *Handler) handleGetIndex(c *gin.Context) {
 		"log_group_id":          database.GetSetting("log_group_id"),
 		"bot_tokens":            database.GetSetting("bot_tokens"),
 		"bot_statuses":          botStatusesStr,
+		"bot_admin_ids":         database.GetSetting("bot_admin_ids"),
+		"telegram_user_id":       database.GetUserSetting(sessionUsername, "telegram_user_id"),
+		"bot_pool_upload_folder": func() string {
+			f := database.GetUserSetting(sessionUsername, "bot_pool_upload_folder")
+			if f == "" {
+				return "TelegramUpload"
+			}
+			return f
+		}(),
 	})
 }
 
